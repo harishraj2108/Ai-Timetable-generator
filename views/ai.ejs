@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeTable AI — Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/ai.css" />
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+  <div class="loader-ring"></div>
+  <p class="loader-text">Generating your timetable…</p>
+  <p class="loader-sub">This may take up to 30 seconds</p>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast toast--error" style="display:none;">
+  <i class="fas fa-circle-xmark"></i>
+  <span id="toast-msg"></span>
+</div>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar__logo">
+    <span class="topbar__icon">⌘</span>
+    <span>TimeTable <em>AI</em></span>
+  </div>
+  <a href="/" class="topbar__logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</header>
+
+<div class="page">
+<form action="/ai" method="POST" id="mainForm" onsubmit="return validateForm()">
+
+  <!-- Step 1: Schedule -->
+  <section class="section-card">
+    <div class="section-card__header">
+      <span class="step-badge">01</span>
+      <div>
+        <h2 class="section-card__title">Schedule Overview</h2>
+        <p class="section-card__sub">Basic structure of the timetable</p>
+      </div>
+    </div>
+
+    <div class="field-grid field-grid--3">
+      <div class="field">
+        <label class="field__label">Days per Week</label>
+        <input class="field__input" type="number" name="days" min="1" max="7" placeholder="e.g. 5" required>
+      </div>
+      <div class="field">
+        <label class="field__label">Hours per Day</label>
+        <input class="field__input" type="number" name="hours" min="1" max="12" placeholder="e.g. 6" required>
+      </div>
+      <div class="field">
+        <label class="field__label">Number of Classes / Sections</label>
+        <input class="field__input" type="number" name="numberOfClasses" id="numClasses" min="1" max="20" placeholder="e.g. 3" required>
+      </div>
+    </div>
+
+    <!-- Class name inputs (dynamically generated) -->
+    <div id="classNamesWrap" class="class-names-wrap" style="display:none;">
+      <p class="field__label" style="margin-bottom:10px;">Class / Section Names</p>
+      <div id="classNameFields" class="field-grid field-grid--3"></div>
+    </div>
+  </section>
+
+  <!-- Step 2: Subjects -->
+  <section class="section-card">
+    <div class="section-card__header">
+      <span class="step-badge">02</span>
+      <div>
+        <h2 class="section-card__title">Subjects</h2>
+        <p class="section-card__sub">Comma-separated list of subjects to schedule</p>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field__label">Subject Names</label>
+      <input class="field__input" type="text" name="subjects" id="subjectInput"
+        placeholder="e.g. Maths, Physics, Chemistry, English" required>
+      <p class="field__hint">Separate multiple subjects with commas</p>
+    </div>
+  </section>
+
+  <!-- Step 3: Faculty -->
+  <section class="section-card">
+    <div class="section-card__header">
+      <span class="step-badge">03</span>
+      <div>
+        <h2 class="section-card__title">Faculty Details</h2>
+        <p class="section-card__sub">One entry per faculty member — must match subject count</p>
+      </div>
+    </div>
+
+    <div class="field-grid field-grid--2">
+      <div class="field">
+        <label class="field__label">Faculty Names</label>
+        <input class="field__input" type="text" name="facultyName" id="facultyInput"
+          placeholder="e.g. Dr. Rajan, Prof. Meera" required>
+      </div>
+      <div class="field">
+        <label class="field__label">Subjects Taken (same order)</label>
+        <input class="field__input" type="text" name="subjectTaken" id="subjectTakenInput"
+          placeholder="e.g. Maths, Physics" required>
+      </div>
+      <div class="field">
+        <label class="field__label">Available Days</label>
+        <input class="field__input" type="text" name="availableDays"
+          placeholder="e.g. Mon-Fri, Mon Wed Fri">
+      </div>
+      <div class="field">
+        <label class="field__label">Hours per Day (per faculty)</label>
+        <input class="field__input" type="number" name="facultyHours" placeholder="e.g. 2">
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4: Class / Time -->
+  <div class="two-col">
+
+    <section class="section-card">
+      <div class="section-card__header">
+        <span class="step-badge">04</span>
+        <div>
+          <h2 class="section-card__title">Class Details</h2>
+          <p class="section-card__sub">Academic year &amp; section info</p>
+        </div>
+      </div>
+      <div class="field-grid field-grid--2">
+        <div class="field">
+          <label class="field__label">Year</label>
+          <select class="field__input" name="year">
+            <option value="">Select Year</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Section</label>
+          <select class="field__input" name="section">
+            <option value="">Select Section</option>
+            <option>A</option><option>B</option><option>C</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Total Working Days</label>
+          <input class="field__input" type="number" name="workingDays" placeholder="e.g. 180">
+        </div>
+        <div class="field">
+          <label class="field__label">Periods per Day</label>
+          <input class="field__input" type="number" name="periodsPerDay" placeholder="e.g. 8">
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-card__header">
+        <span class="step-badge">05</span>
+        <div>
+          <h2 class="section-card__title">Time Structure</h2>
+          <p class="section-card__sub">Daily schedule timing</p>
+        </div>
+      </div>
+      <div class="field-grid field-grid--2">
+        <div class="field">
+          <label class="field__label">Start Time</label>
+          <input class="field__input" type="time" name="startTime">
+        </div>
+        <div class="field">
+          <label class="field__label">End Time</label>
+          <input class="field__input" type="time" name="endTime">
+        </div>
+        <div class="field">
+          <label class="field__label">Period Duration (mins)</label>
+          <input class="field__input" type="number" name="duration" placeholder="e.g. 50">
+        </div>
+        <div class="field">
+          <label class="field__label">Morning Break (mins)</label>
+          <input class="field__input" type="number" name="breakTime" placeholder="e.g. 15">
+        </div>
+        <div class="field">
+          <label class="field__label">Lunch Break (mins)</label>
+          <input class="field__input" type="number" name="lunchTime" placeholder="e.g. 45">
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button type="reset" class="btn-ghost">
+      <i class="fas fa-rotate-left"></i> Reset
+    </button>
+    <button type="submit" class="btn-primary" id="submitBtn">
+      <i class="fas fa-wand-magic-sparkles"></i> Generate Timetable
+    </button>
+  </div>
+
+</form>
+</div>
+
+<script>
+/* ── Dynamic class-name fields ─────────────────────── */
+document.getElementById('numClasses').addEventListener('input', function () {
+  const n = parseInt(this.value);
+  const wrap = document.getElementById('classNamesWrap');
+  const container = document.getElementById('classNameFields');
+  container.innerHTML = '';
+  if (!n || n < 1) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  for (let i = 1; i <= n; i++) {
+    const div = document.createElement('div');
+    div.className = 'field';
+    div.innerHTML = `
+      <label class="field__label">Class ${i} Name</label>
+      <input class="field__input" type="text" name="classNames" placeholder="e.g. CSE-A" required>
+    `;
+    container.appendChild(div);
+  }
+});
+
+/* ── Validation ────────────────────────────────────── */
+function validateForm() {
+  const subjects = document.getElementById('subjectInput').value.trim();
+  const faculty  = document.getElementById('facultyInput').value.trim();
+  const taken    = document.getElementById('subjectTakenInput').value.trim();
+
+  if (!subjects || !faculty || !taken) {
+    showToast('Please fill in all required fields.');
+    return false;
+  }
+
+  const s = subjects.split(',').map(x => x.trim()).filter(Boolean);
+  const f = faculty.split(',').map(x => x.trim()).filter(Boolean);
+  const t = taken.split(',').map(x => x.trim()).filter(Boolean);
+
+  if (f.length !== t.length) {
+    showToast('Faculty names and subjects taken must have the same number of comma-separated entries.');
+    return false;
+  }
+
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  return true;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.style.display = 'flex';
+  setTimeout(() => { toast.style.display = 'none'; }, 4000);
+}
+</script>
+
+</body>
+</html>

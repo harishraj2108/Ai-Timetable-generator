@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeTable AI — Your Timetable</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/timetable.css" />
+</head>
+<body>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar__logo">
+    <span class="topbar__icon">⌘</span>
+    <span>TimeTable <em>AI</em></span>
+  </div>
+  <div class="topbar__actions">
+    <a href="/ai" class="btn-ghost"><i class="fas fa-arrow-left"></i> New Timetable</a>
+    <button onclick="downloadPDF()" class="btn-primary">
+      <i class="fas fa-file-arrow-down"></i> Download PDF
+    </button>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Meta bar -->
+  <div class="meta-bar">
+    <div class="meta-item">
+      <span class="meta-item__label">Generated</span>
+      <span class="meta-item__value"><%= new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) %></span>
+    </div>
+    <% if (typeof year !== 'undefined' && year) { %>
+    <div class="meta-item">
+      <span class="meta-item__label">Year</span>
+      <span class="meta-item__value"><%= year %></span>
+    </div>
+    <% } %>
+    <% if (typeof section !== 'undefined' && section) { %>
+    <div class="meta-item">
+      <span class="meta-item__label">Section</span>
+      <span class="meta-item__value"><%= section %></span>
+    </div>
+    <% } %>
+    <% if (typeof numberOfClasses !== 'undefined' && numberOfClasses) { %>
+    <div class="meta-item">
+      <span class="meta-item__label">Classes</span>
+      <span class="meta-item__value"><%= numberOfClasses %></span>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Timetable output cards (one per class) -->
+  <% if (typeof timetables !== 'undefined' && timetables.length > 0) { %>
+    <% timetables.forEach(function(tt, idx) { %>
+    <div class="tt-card">
+      <div class="tt-card__header">
+        <h2 class="tt-card__title">
+          <% if (tt.className) { %><%= tt.className %><% } else { %>Class <%= idx + 1 %><% } %>
+        </h2>
+        <span class="tt-badge">AI Generated</span>
+      </div>
+      <div class="tt-content">
+        <%- tt.html %>
+      </div>
+    </div>
+    <% }) %>
+  <% } else { %>
+    <!-- Fallback: raw text timetable -->
+    <div class="tt-card">
+      <div class="tt-card__header">
+        <h2 class="tt-card__title">Generated Timetable</h2>
+        <span class="tt-badge">AI Generated</span>
+      </div>
+      <div class="tt-content tt-content--raw">
+        <pre><%= timetableRaw %></pre>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Faculty Legend -->
+  <% if (typeof facultyList !== 'undefined' && facultyList.length > 0) { %>
+  <div class="legend-card">
+    <h3 class="legend-card__title">Faculty Legend</h3>
+    <div class="legend-grid">
+      <% facultyList.forEach(function(f) { %>
+      <div class="legend-item">
+        <span class="legend-dot"></span>
+        <span class="legend-name"><%= f.name %></span>
+        <span class="legend-subject"><%= f.subject %></span>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
+</div>
+
+<script>
+function downloadPDF() {
+  window.open('/timetable/pdf?id=<%= timetableId %>', '_blank');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Your Vacation</title>
+  <link rel="stylesheet" href="/css/second.css">
+</head>
+<body>
+
+  <header>
+    <a href="/login" class="back-btn">← Back</a>
+    <h1>Plan Your Vacation</h1>
+  </header>
+
+  <main>
+    <!-- Where will you be staying -->
+    <section class="card">
+      <h2>Where will you be staying?</h2>
+      <label for="hotel">Hotel or Address</label>
+      <input type="text" id="hotel" placeholder="Enter hotel name or address">
+      <p class="hint">We'll find amazing places near your accommodation</p>
+    </section>
+
+    <!-- Trip Dates -->
+    <section class="card">
+      <h2>Trip Dates</h2>
+      <div class="date-container">
+        <div>
+          <label for="checkin">Check-in Date</label>
+          <input type="date" id="checkin">
+        </div>
+        <div>
+          <label for="checkout">Check-out Date</label>
+          <input type="date" id="checkout">
+        </div>
+      </div>
+    </section>
+
+    <!-- Search Radius -->
+    <section class="card">
+      <h2>Search Radius</h2>
+      <input type="range" min="1" max="20" value="5" class="slider">
+      <div class="range-labels">
+        <span>1 km</span>
+        <span>5 km</span>
+        <span>20 km</span>
+      </div>
+      <p class="hint">How far are you willing to travel from your accommodation?</p>
+    </section>
+
+    <!-- Interests -->
+    <section class="card">
+      <h2>What interests you?</h2>
+      <p class="hint">Select your preferences to get personalized recommendations</p>
+      <div class="tags">
+        <span>Food & Dining</span>
+        <span>Nature & Parks</span>
+        <span>History & Culture</span>
+        <span>Museums</span>
+        <span>Shopping</span>
+        <span>Nightlife</span>
+        <span>Adventure Sports</span>
+        <span>Photography</span>
+        <span>Architecture</span>
+        <span>Local Markets</span>
+        <span>Art Galleries</span>
+        <span>Music & Entertainment</span>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="cancel">Cancel</button>
+      <button class="generate">Generate Plan</button>
+    </div>
+  </main>
+
+</body>
+</html>
